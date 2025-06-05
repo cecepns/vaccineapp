@@ -28,7 +28,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get('http://api-pickpoint.isavralabel.com/api/patients', {
+        const response = await axios.get('https://api-pickpoint.isavralabel.com/api/patients', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPatients(response.data);
@@ -49,7 +49,7 @@ const Dashboard = () => {
     }
 
     try {
-      await axios.delete(`http://api-pickpoint.isavralabel.com/api/patients/${id}`, {
+      await axios.delete(`https://api-pickpoint.isavralabel.com/api/patients/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

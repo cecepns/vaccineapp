@@ -100,7 +100,7 @@ const PatientView = () => {
   useEffect(() => {
     const fetchPatient = async () => {
       try {
-        const response = await axios.get(`http://api-pickpoint.isavralabel.com/api/patients/${slug}`);
+        const response = await axios.get(`https://api-pickpoint.isavralabel.com/api/patients/${slug}`);
         setPatient(response.data);
         setLoading(false);
       } catch (err) {
