@@ -65,27 +65,42 @@ const Dashboard = () => {
     const qrElement = qrRefs.current[slug];
     if (!qrElement) return;
 
-    const canvas = document.createElement('canvas');
-    const svg = qrElement.querySelector('svg');
-    if (!svg) return;
+    // Create a temporary div for the larger QR code
+    const tempDiv = document.createElement('div');
+    const largeQR = document.createElement('div');
+    tempDiv.appendChild(largeQR);
+    document.body.appendChild(tempDiv);
 
-    const svgData = new XMLSerializer().serializeToString(svg);
+    // Generate larger QR code
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const qr = React.createElement(QRCodeSVG, {
+      value: window.location.origin + '/pasien/' + slug,
+      size: 300, // Larger size for download
+      level: 'L'
+    });
+    svg.innerHTML = qr.toString();
+    largeQR.appendChild(svg);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 300;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     const img = new Image();
     img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(img, 0, 0, 300, 300);
       const pngFile = canvas.toDataURL('image/png');
       
       const downloadLink = document.createElement('a');
       downloadLink.download = `qr-code-${slug}.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
+
+      // Clean up
+      document.body.removeChild(tempDiv);
     };
-    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    img.src = 'data:image/svg+xml;base64,' + btoa(new XMLSerializer().serializeToString(svg));
   };
 
   if (loading) {
