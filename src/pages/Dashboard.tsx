@@ -186,7 +186,7 @@ const Dashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div ref={el => qrRefs.current[patient.slug] = el}>
-                          <QRCodeSVG value={patient.slug} size={48} level="L" />
+                          <QRCodeSVG value={window.location.origin + '/pasien/' + patient.slug} size={55} level="L" />
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
