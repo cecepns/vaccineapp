@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Eye, Loader } from 'lucide-react';
+import { Edit, Trash2, Eye, Loader, Download } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
@@ -23,11 +23,12 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { token } = useAuth();
+  const qrRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get('https://api-pickpoint.isavralabel.com/api/patients', {
+        const response = await axios.get('http://api-pickpoint.isavralabel.com/api/patients', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPatients(response.data);
@@ -48,7 +49,7 @@ const Dashboard = () => {
     }
 
     try {
-      await axios.delete(`https://api-pickpoint.isavralabel.com/api/patients/${id}`, {
+      await axios.delete(`http://api-pickpoint.isavralabel.com/api/patients/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -58,6 +59,33 @@ const Dashboard = () => {
       console.error('Error deleting patient:', err);
       setError('Failed to delete patient');
     }
+  };
+
+  const handleDownloadQR = (slug: string) => {
+    const qrElement = qrRefs.current[slug];
+    if (!qrElement) return;
+
+    const canvas = document.createElement('canvas');
+    const svg = qrElement.querySelector('svg');
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL('image/png');
+      
+      const downloadLink = document.createElement('a');
+      downloadLink.download = `qr-code-${slug}.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
   };
 
   if (loading) {
@@ -157,10 +185,12 @@ const Dashboard = () => {
                         {patient.slug}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <QRCodeSVG value={window.location.origin + '/pasien/' + patient.slug} size={48} level="L" />
+                        <div ref={el => qrRefs.current[patient.slug] = el}>
+                          <QRCodeSVG value={patient.slug} size={48} level="L" />
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex space-x-2">
+                        <div className="flex gap-5 flex-col md:flex-row">
                           <Link 
                             to={`/pasien/${patient.slug}`} 
                             target="_blank"
@@ -176,6 +206,13 @@ const Dashboard = () => {
                           >
                             <Edit className="h-5 w-5" />
                           </Link>
+                          <button
+                            onClick={() => handleDownloadQR(patient.slug)}
+                            className="text-green-600 hover:text-green-900 transition-colors duration-200"
+                            title="Download QR Code"
+                          >
+                            <Download className="h-5 w-5" />
+                          </button>
                           <button
                             onClick={() => handleDelete(patient.id)}
                             className="text-red-600 hover:text-red-900 transition-colors duration-200"

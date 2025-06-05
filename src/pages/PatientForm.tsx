@@ -46,7 +46,7 @@ const PatientForm = () => {
       if (isEditMode) {
         try {
           setLoading(true);
-          const response = await axios.get(`https://api-pickpoint.isavralabel.com/api/patients/${id}`, {
+          const response = await axios.get(`http://api-pickpoint.isavralabel.com/api/patients/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -55,6 +55,8 @@ const PatientForm = () => {
           patient.birth_date = patient.birth_date.split('T')[0];
           patient.vaccine_date = patient.vaccine_date.split('T')[0];
           patient.valid_until = patient.valid_until.split('T')[0];
+          patient.disease_date = patient.disease_date.split('T')[0];
+          patient.next_booster_date = patient.next_booster_date.split('T')[0];
           
           reset(patient);
           setLoading(false);
@@ -75,12 +77,12 @@ const PatientForm = () => {
       setError('');
       
       if (isEditMode) {
-        await axios.put(`https://api-pickpoint.isavralabel.com/api/patients/${id}`, data, {
+        await axios.put(`http://api-pickpoint.isavralabel.com/api/patients/${id}`, data, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSuccess('Patient updated successfully!');
       } else {
-        await axios.post('https://api-pickpoint.isavralabel.com/api/patients', data, {
+        await axios.post('http://api-pickpoint.isavralabel.com/api/patients', data, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSuccess('Patient added successfully!');
