@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { QRCodeSVG } from 'qrcode.react';
+import ReactDOM from 'react-dom/client';
 
 interface Patient {
   id: number;
@@ -62,9 +63,6 @@ const Dashboard = () => {
   };
 
   const handleDownloadQR = (slug: string) => {
-    const qrElement = qrRefs.current[slug];
-    if (!qrElement) return;
-
     // Create a temporary div for the larger QR code
     const tempDiv = document.createElement('div');
     const largeQR = document.createElement('div');
@@ -72,35 +70,45 @@ const Dashboard = () => {
     document.body.appendChild(tempDiv);
 
     // Generate larger QR code
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    const qr = React.createElement(QRCodeSVG, {
-      value: window.location.origin + '/pasien/' + slug,
-      size: 300, // Larger size for download
+    const qrValue = window.location.origin + '/pasien/' + slug;
+    const qrComponent = React.createElement(QRCodeSVG, {
+      value: qrValue,
+      size: 300,
       level: 'L'
     });
-    svg.innerHTML = qr.toString();
-    largeQR.appendChild(svg);
 
-    const canvas = document.createElement('canvas');
-    canvas.width = 300;
-    canvas.height = 300;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    // Render the QR code
+    const root = ReactDOM.createRoot(largeQR);
+    root.render(qrComponent);
 
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, 300, 300);
-      const pngFile = canvas.toDataURL('image/png');
-      
-      const downloadLink = document.createElement('a');
-      downloadLink.download = `qr-code-${slug}.png`;
-      downloadLink.href = pngFile;
-      downloadLink.click();
+    // Wait for the QR code to be rendered
+    setTimeout(() => {
+      const svg = largeQR.querySelector('svg');
+      if (!svg) return;
 
-      // Clean up
-      document.body.removeChild(tempDiv);
-    };
-    img.src = 'data:image/svg+xml;base64,' + btoa(new XMLSerializer().serializeToString(svg));
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement('canvas');
+      canvas.width = 300;
+      canvas.height = 300;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, 300, 300);
+        const pngFile = canvas.toDataURL('image/png');
+        
+        const downloadLink = document.createElement('a');
+        downloadLink.download = `qr-code-${slug}.png`;
+        downloadLink.href = pngFile;
+        downloadLink.click();
+
+        // Clean up
+        root.unmount();
+        document.body.removeChild(tempDiv);
+      };
+      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }, 100);
   };
 
   if (loading) {
