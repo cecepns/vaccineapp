@@ -19,7 +19,7 @@ const Login = () => {
     setLoading(true);
     
     try {
-      const response = await axios.post('https://api-pickpoint.isavralabel.com/api/login', {
+      const response = await axios.post('https://api-inventory.isavralabel.com/api/patiens/login', {
         username,
         password
       });

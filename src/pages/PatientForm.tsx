@@ -46,7 +46,7 @@ const PatientForm = () => {
       if (isEditMode) {
         try {
           setLoading(true);
-          const response = await axios.get(`https://api-pickpoint.isavralabel.com/api/patients/${id}`, {
+          const response = await axios.get(`https://api-inventory.isavralabel.com/api/patients/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -77,12 +77,12 @@ const PatientForm = () => {
       setError('');
       
       if (isEditMode) {
-        await axios.put(`https://api-pickpoint.isavralabel.com/api/patients/${id}`, data, {
+        await axios.put(`https://api-inventory.isavralabel.com/api/patients/${id}`, data, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSuccess('Patient updated successfully!');
       } else {
-        await axios.post('https://api-pickpoint.isavralabel.com/api/patients', data, {
+        await axios.post('https://api-inventory.isavralabel.com/api/patients', data, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSuccess('Patient added successfully!');

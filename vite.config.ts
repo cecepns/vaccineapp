@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api-pickpoint.isavralabel.com',
+        target: 'https://api-inventory.isavralabel.com',
         changeOrigin: true,
       }
     }

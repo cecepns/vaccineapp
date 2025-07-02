@@ -24,30 +24,18 @@ app.use(express.json());
 //   connectionLimit: 10,
 //   queueLimit: 0
 // });
-// Database connection
-const pool = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "vaccination_db",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
 
-// Authentication middleware
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) return res.status(401).json({ message: 'Access denied' });
-  
-  jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret', (err, user) => {
-    if (err) return res.status(403).json({ message: 'Invalid token' });
-    req.user = user;
-    next();
-  });
-};
+// Database connection
+// const pool = mysql.createPool({
+//   host: "localhost",
+//   user: "root",
+//   password: "",
+//   database: "vaccination_db",
+//   waitForConnections: true,
+//   connectionLimit: 10,
+//   queueLimit: 0
+// });
+
 
 // Initialize database tables
 const initDb = async () => {
@@ -111,6 +99,20 @@ const initDb = async () => {
 // Initialize database on server start
 // initDb();
 
+
+// ========= PATIENST APP API ==============
+
+// Database connection live
+const pool = mysql.createPool({
+  host: "localhost",
+  user: "isad8273_vaccination",
+  password: "isad8273_vaccination",
+  database: "isad8273_vaccination",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
 // Generate unique slug
 const generateUniqueSlug = async () => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -138,9 +140,22 @@ const generateUniqueSlug = async () => {
   return slug;
 };
 
-// Routes
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.status(401).json({ message: 'Access denied' });
+  
+  jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret', (err, user) => {
+    if (err) return res.status(403).json({ message: 'Invalid token' });
+    req.user = user;
+    next();
+  });
+};
+
 // Login route
-app.post('/api/login', async (req, res) => {
+app.post('/api/patiens/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
@@ -222,11 +237,34 @@ app.post('/api/patients', authenticateToken, async (req, res) => {
   }
 });
 
-// Get all patients
+// Get all patients with pagination
 app.get('/api/patients', authenticateToken, async (req, res) => {
   try {
-    const [rows] = await pool.execute('SELECT * FROM patients ORDER BY created_at DESC');
-    res.status(200).json(rows);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    // Get total count
+    const [countResult] = await pool.execute('SELECT COUNT(*) as total FROM patients');
+    const total = countResult[0].total;
+    
+    // Get paginated data
+    const [rows] = await pool.execute(
+      'SELECT * FROM patients ORDER BY created_at DESC LIMIT ? OFFSET ?',
+      [limit, offset]
+    );
+    
+    res.status(200).json({
+      patients: rows,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalRecords: total,
+        recordsPerPage: limit,
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPrevPage: page > 1
+      }
+    });
   } catch (error) {
     console.error('Error fetching patients:', error);
     res.status(500).json({ message: 'Server error' });

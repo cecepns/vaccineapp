@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Eye, Loader, Download } from 'lucide-react';
+import { Edit, Trash2, Eye, Loader, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
@@ -19,20 +19,32 @@ interface Patient {
   slug: string;
 }
 
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+  recordsPerPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
 const Dashboard = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const { token } = useAuth();
   const qrRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get('https://api-pickpoint.isavralabel.com/api/patients', {
+        const response = await axios.get(`https://api-inventory.isavralabel.com/api/patients?page=${currentPage}&limit=10`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setPatients(response.data);
+        setPatients(response.data.patients);
+        setPagination(response.data.pagination);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching patients:', err);
@@ -42,7 +54,7 @@ const Dashboard = () => {
     };
 
     fetchPatients();
-  }, [token]);
+  }, [token, currentPage]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this patient record?')) {
@@ -50,16 +62,24 @@ const Dashboard = () => {
     }
 
     try {
-      await axios.delete(`https://api-pickpoint.isavralabel.com/api/patients/${id}`, {
+      await axios.delete(`https://api-inventory.isavralabel.com/api/patients/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Remove deleted patient from state
-      setPatients(patients.filter(patient => patient.id !== id));
+      // Refresh current page after deletion
+      const response = await axios.get(`https://api-inventory.isavralabel.com/api/patients?page=${currentPage}&limit=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPatients(response.data.patients);
+      setPagination(response.data.pagination);
     } catch (err) {
       console.error('Error deleting patient:', err);
       setError('Failed to delete patient');
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
   };
 
   const handleDownloadQR = (slug: string) => {
@@ -251,6 +271,103 @@ const Dashboard = () => {
               </tbody>
             </table>
           </div>
+          
+          {/* Pagination Controls */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <div className="text-sm text-gray-700">
+                Showing {((pagination.currentPage - 1) * pagination.recordsPerPage) + 1} to{' '}
+                {Math.min(pagination.currentPage * pagination.recordsPerPage, pagination.totalRecords)} of{' '}
+                {pagination.totalRecords} results
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPrevPage}
+                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                    pagination.hasPrevPage
+                      ? 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                      : 'text-gray-300 bg-gray-100 border border-gray-200 cursor-not-allowed'
+                  }`}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                
+                <div className="flex items-center space-x-1">
+                  {(() => {
+                    const totalPages = pagination.totalPages;
+                    const currentPage = pagination.currentPage;
+                    const pages = [];
+                    
+                    // Always show first page
+                    pages.push(1);
+                    
+                    if (totalPages <= 7) {
+                      // If total pages is 7 or less, show all pages
+                      for (let i = 2; i <= totalPages; i++) {
+                        pages.push(i);
+                      }
+                    } else {
+                      // Show ellipsis after first page if current page is > 4
+                      if (currentPage > 4) {
+                        pages.push('...');
+                      }
+                      
+                      // Show pages around current page
+                      const start = Math.max(2, currentPage - 1);
+                      const end = Math.min(totalPages - 1, currentPage + 1);
+                      
+                      for (let i = start; i <= end; i++) {
+                        if (!pages.includes(i)) {
+                          pages.push(i);
+                        }
+                      }
+                      
+                      // Show ellipsis before last page if current page is < totalPages - 3
+                      if (currentPage < totalPages - 3) {
+                        pages.push('...');
+                      }
+                      
+                      // Always show last page if it's not already included
+                      if (totalPages > 1 && !pages.includes(totalPages)) {
+                        pages.push(totalPages);
+                      }
+                    }
+                    
+                    return pages.map((page, index) => (
+                      <button
+                        key={index}
+                        onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
+                        disabled={typeof page !== 'number'}
+                        className={`px-3 py-2 text-sm font-medium rounded-md ${
+                          typeof page === 'number'
+                            ? page === currentPage
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                            : 'text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ));
+                  })()}
+                </div>
+                
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNextPage}
+                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                    pagination.hasNextPage
+                      ? 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                      : 'text-gray-300 bg-gray-100 border border-gray-200 cursor-not-allowed'
+                  }`}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
