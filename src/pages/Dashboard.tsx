@@ -40,7 +40,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get(`https://api-inventory.isavralabel.com/api/patients?page=${currentPage}&limit=10`, {
+        const response = await axios.get(`https://api.kingcreativestudio.my.id/api/patients?page=${currentPage}&limit=10`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPatients(response.data.patients);
@@ -62,12 +62,12 @@ const Dashboard = () => {
     }
 
     try {
-      await axios.delete(`https://api-inventory.isavralabel.com/api/patients/${id}`, {
+      await axios.delete(`https://api.kingcreativestudio.my.id/api/patients/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       // Refresh current page after deletion
-      const response = await axios.get(`https://api-inventory.isavralabel.com/api/patients?page=${currentPage}&limit=10`, {
+      const response = await axios.get(`https://api.kingcreativestudio.my.id/api/patients?page=${currentPage}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPatients(response.data.patients);

@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api-inventory.isavralabel.com',
+        target: 'https://api.kingcreativestudio.my.id',
         changeOrigin: true,
       }
     }
