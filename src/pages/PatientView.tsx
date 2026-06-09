@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { QRCodeSVG } from 'qrcode.react';
 import axios from 'axios';
 import { Printer, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import LoadingSpinner from '../components/LoadingSpinner';
+import kemenkesLogo from '../assets/kemenkes.png';
 
 interface Patient {
   id: number;
@@ -134,43 +136,37 @@ const PatientView = () => {
   }
 
   return (
-    <div className="mx-auto bg-[#fafafa] min-h-screen py-10 px-4">
-      {/* <div className="flex justify-between items-center mb-8">
-        <Link to="/" className="text-blue-600 hover:text-blue-800 inline-flex items-center">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Home
-        </Link>
-        <PDFDownloadLink
-          document={<PDFDocument patient={patient} url={url} />}
-          fileName={`Vaccination_Record_${slug}.pdf`}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-200 inline-flex items-center"
-        >
-          {({ loading }) => (
-            <>
-              <Printer className="h-4 w-4 mr-2" />
-              {loading ? 'Preparing PDF...' : 'Print / Save as PDF'}
-            </>
-          )}
-        </PDFDownloadLink>
-      </div> */}
+    <div className="relative mx-auto bg-[#f5e19f] min-h-screen py-10 px-4 overflow-hidden">
+      {/* Watermark Logo Kemenkes */}
+      <div
+        className="pointer-events-none absolute inset-0 flex items-center justify-center z-0"
+        aria-hidden="true"
+      >
+        <img
+          src={kemenkesLogo}
+          alt=""
+          className="w-[60%] max-w-[600px] opacity-10 select-none"
+          draggable={false}
+        />
+      </div>
 
-      {/* Header Dokumen */}
-      {/* <div className="rounded-lgp-8 mb-8">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6">
-          <div className="mb-4 md:mb-0">
-            <div className="text-lg font-semibold mb-1">Balai Kekarantinaan Kesehatanan/Rumah Sakit</div>
-            <div className="text-base font-medium">PRIMA MEDICAL CENTER III</div>
-          </div>
-          <div className="flex flex-col items-end">
-            <div className="text-sm text-gray-600">No. Dokumen</div>
-            <div className="font-medium">E00-023330</div>
-            <div className="text-sm text-gray-600 mt-2">Barcode Number</div>
-            <div className="flex items-center gap-2">
-              <span className="font-medium">E00-023330</span>
-              <QRCodeSVG value={patient.slug} size={36} level="L" />
-            </div>
-          </div>
+      <div className="relative z-10">
+      {/* Header Dokumen dengan QR Code */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-8 gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-800">
+            Certificat Internatiional de Vaccination ou de Prophylaxie
+          </h1>
+          <p className="text-sm text-gray-700 italic mt-1">
+            International Certificate of Vaccination or Prophylaxis
+          </p>
         </div>
-      </div> */}
+        <div className="flex flex-col items-center bg-white/70 p-3 rounded-md shadow-sm">
+          <QRCodeSVG value={url} size={120} level="H" includeMargin={false} />
+          <span className="mt-2 text-xs font-medium text-gray-700">{patient.slug}</span>
+        </div>
+      </div>
+
       <div className="md:w-2/3">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 mb-6">
           <div className="text-gray-500 md:text-right font-bold text-sm">Balai Kekarantinaan Kesehatanan/Rumah Sakit</div>
@@ -232,35 +228,35 @@ const PatientView = () => {
 
       {/* Tabel Vaksinasi */}
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300 bg-white text-sm">
-          <thead className="bg-gray-100">
+        <table className="min-w-full border border-yellow-900/30 bg-transparent text-sm text-gray-800">
+          <thead className="bg-[#e8d79c]">
             <tr>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Vaccine or Prophy</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Date</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Signature and profesional status of supervising clinican</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Manufacture and batch no. of vaccine or prophylaxis</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Certificate valid until</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Official stamp of the administering centre</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Disease targeted</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Date</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Manufacture, brand name and batch no. of vaccine</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Next Booster (date)</th>
-              <th className="border border-gray-300 px-2 py-2 font-semibold">Official stamp and signature</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Vaccine or Prophy</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Date</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Signature and profesional status of supervising clinican</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Manufacture and batch no. of vaccine or prophylaxis</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Certificate valid until</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Official stamp of the administering centre</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Disease targeted</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Date</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Manufacture, brand name and batch no. of vaccine</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Next Booster (date)</th>
+              <th className="border border-yellow-900/30 px-2 py-2 font-semibold">Official stamp and signature</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td className="border border-gray-300 px-2 py-2">{patient.vaccine_type}</td>
-              <td className="border border-gray-300 px-2 py-2">{format(new Date(patient.vaccine_date), 'dd MMMM yyyy')}</td>
-              <td className="border border-gray-300 px-2 py-2">{patient.doctor_name}</td>
-              <td className="border border-gray-300 px-2 py-2">{patient.vaccine_batch_number}</td>
-              <td className="border border-gray-300 px-2 py-2">{format(new Date(patient.valid_until), 'dd MMMM yyyy')}</td>
-              <td className="border border-gray-300 px-2 py-2">{patient.administration_location}</td>
-              <td className="border border-gray-300 px-2 py-2">{patient.disease_targeted}</td>
-              <td className="border border-gray-300 px-2 py-2">{format(new Date(patient.disease_date), 'dd MMMM yyyy')}</td>
-              <td className="border border-gray-300 px-2 py-2">{patient.manufacture_brand_batch}</td>
-              <td className="border border-gray-300 px-2 py-2">{format(new Date(patient.next_booster_date), 'dd MMMM yyyy')}</td>
-              <td className="border border-gray-300 px-2 py-2">{patient.official_stamp_signature}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{patient.vaccine_type}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{format(new Date(patient.vaccine_date), 'dd MMMM yyyy')}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{patient.doctor_name}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{patient.vaccine_batch_number}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{format(new Date(patient.valid_until), 'dd MMMM yyyy')}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{patient.administration_location}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{patient.disease_targeted}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{format(new Date(patient.disease_date), 'dd MMMM yyyy')}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{patient.manufacture_brand_batch}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{format(new Date(patient.next_booster_date), 'dd MMMM yyyy')}</td>
+              <td className="border border-yellow-900/30 px-2 py-2">{patient.official_stamp_signature}</td>
             </tr>
           </tbody>
         </table>
@@ -269,8 +265,9 @@ const PatientView = () => {
       {/* QR Code & Footer */}
       {/* <div className="mt-10 flex flex-col items-center">
         <QRCodeSVG value={url} size={120} level="H" includeMargin={true} />
-        <p className="mt-2 text-sm text-gray-600">Scan to verify</p>
+        <p className="mt-2 text-sm text-gray-700">Scan to verify</p>
       </div> */}
+      </div>
     </div>
   );
 };

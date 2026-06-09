@@ -36,7 +36,7 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="w-full max-w-md mx-auto px-4 py-8 md:px-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Administrator Login</h1>
         <p className="text-gray-600">Sign in to manage patient vaccination records</p>
