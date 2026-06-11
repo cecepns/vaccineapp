@@ -1,12 +1,15 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 
 const Layout = () => {
+  const location = useLocation();
+  const hideNavbar = location.pathname.startsWith('/pasien/');
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Navbar />
+      {!hideNavbar && <Navbar />}
       <main className="flex-grow w-full">
         <Outlet />
       </main>
