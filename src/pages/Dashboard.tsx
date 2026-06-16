@@ -1,23 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, Eye, Loader, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Eye, Loader, Download, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import axios from 'axios';
+import { pdf } from '@react-pdf/renderer';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { QRCodeSVG } from 'qrcode.react';
 import ReactDOM from 'react-dom/client';
-
-interface Patient {
-  id: number;
-  name: string;
-  address: string;
-  birth_date: string;
-  vaccine_type: string;
-  vaccine_date: string;
-  valid_until: string;
-  administration_location: string;
-  slug: string;
-}
+import VaccinationCertificatePDF from '../components/VaccinationCertificatePDF';
+import { generateQRDataUrl } from '../utils/generateQRDataUrl';
+import { imageToGrayscaleDataUrl } from '../utils/imageToGrayscaleDataUrl';
+import kemenkesLogo from '../assets/kemenkes.png';
+import type { Patient } from '../types/patient';
 
 interface PaginationInfo {
   currentPage: number;
@@ -34,6 +28,7 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [downloadingPdfSlug, setDownloadingPdfSlug] = useState<string | null>(null);
   const { token } = useAuth();
   const qrRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -129,6 +124,41 @@ const Dashboard = () => {
       };
       img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
     }, 100);
+  };
+
+  const handleDownloadPDF = async (slug: string) => {
+    setDownloadingPdfSlug(slug);
+    try {
+      const response = await axios.get(`https://api.kingcreativestudio.my.id/api/patients/${slug}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const patient: Patient = response.data;
+      const verifyUrl = `${window.location.origin}/pasien/${slug}`;
+      const [qrDataUrl, watermarkDataUrl] = await Promise.all([
+        generateQRDataUrl(verifyUrl, 200),
+        imageToGrayscaleDataUrl(kemenkesLogo),
+      ]);
+
+      const blob = await pdf(
+        <VaccinationCertificatePDF
+          patient={patient}
+          qrDataUrl={qrDataUrl}
+          verifyUrl={verifyUrl}
+          watermarkDataUrl={watermarkDataUrl}
+        />
+      ).toBlob();
+
+      const downloadLink = document.createElement('a');
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = `ICV_${slug}.pdf`;
+      downloadLink.click();
+      URL.revokeObjectURL(downloadLink.href);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      setError('Failed to generate PDF certificate');
+    } finally {
+      setDownloadingPdfSlug(null);
+    }
   };
 
   if (loading) {
@@ -249,6 +279,18 @@ const Dashboard = () => {
                           >
                             <Edit className="h-5 w-5" />
                           </Link>
+                          <button
+                            onClick={() => handleDownloadPDF(patient.slug)}
+                            disabled={downloadingPdfSlug === patient.slug}
+                            className="text-purple-600 hover:text-purple-900 transition-colors duration-200 disabled:opacity-50"
+                            title="Download PDF Certificate"
+                          >
+                            {downloadingPdfSlug === patient.slug ? (
+                              <Loader className="h-5 w-5 animate-spin" />
+                            ) : (
+                              <FileText className="h-5 w-5" />
+                            )}
+                          </button>
                           <button
                             onClick={() => handleDownloadQR(patient.slug)}
                             className="text-green-600 hover:text-green-900 transition-colors duration-200"

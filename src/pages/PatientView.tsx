@@ -145,7 +145,7 @@ const PatientView = () => {
         <img
           src={kemenkesLogo}
           alt=""
-          className="w-[60%] max-w-[600px] opacity-10 select-none"
+          className="w-[32%] max-w-[280px] opacity-[0.06] grayscale select-none"
           draggable={false}
         />
       </div>
