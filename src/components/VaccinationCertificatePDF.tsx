@@ -17,7 +17,9 @@ const formatCertDate = (dateStr?: string) => {
 const styles = StyleSheet.create({
   page: {
     backgroundColor: YELLOW_BG,
-    padding: 28,
+    paddingTop: 14,
+    paddingBottom: 28,
+    paddingHorizontal: 28,
     fontFamily: 'Helvetica',
     color: TEXT_COLOR,
     position: 'relative',
@@ -29,33 +31,34 @@ const styles = StyleSheet.create({
     width: 200,
     opacity: 0.06,
   },
-  headerLogos: {
+  headerSection: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   headerLogo: {
-    width: 360,
-    height: 240,
+    width: 180,
+    height: 120,
     objectFit: 'contain',
+    marginBottom: 0,
   },
   title: {
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 2,
+    marginTop: 0,
+    marginBottom: 1,
     color: '#3D3D3D',
   },
   subtitle: {
     fontSize: 9,
     textAlign: 'center',
-    marginBottom: 18,
+    marginBottom: 0,
     color: '#5A5A5A',
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 8,
     alignItems: 'flex-start',
   },
   patientInfo: {
@@ -90,12 +93,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#5A5A5A',
   },
-  introText: {
+  introSection: {
+    alignItems: 'flex-start',
+    marginTop: 2,
+    marginBottom: 6,
+  },
+  introTextEn: {
     fontSize: 8,
-    textAlign: 'center',
-    marginBottom: 8,
+    textAlign: 'left',
+    fontWeight: 'bold',
+    color: '#3D3D3D',
+    marginBottom: 1,
+  },
+  introTextFr: {
+    fontSize: 8,
+    textAlign: 'left',
+    fontWeight: 'normal',
     color: '#5A5A5A',
-    fontStyle: 'italic',
+    marginBottom: 0,
   },
   table: {
     marginBottom: 0,
@@ -131,22 +146,36 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: 'absolute',
-    bottom: 28,
+    bottom: 34,
     left: 28,
     right: 28,
     alignItems: 'center',
   },
-  disclaimer: {
-    fontSize: 7,
-    textAlign: 'center',
-    marginBottom: 6,
-    color: '#5A5A5A',
-  },
-  footerText: {
+  disclaimerTitle: {
     fontSize: 8,
+    fontWeight: 'bold',
     textAlign: 'center',
     color: '#4A4A4A',
+    marginBottom: 1,
+  },
+  disclaimerBody: {
+    fontSize: 8,
+    textAlign: 'center',
+    color: '#5A5A5A',
+    marginBottom: 10,
+  },
+  footerIssued: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#3D3D3D',
     marginBottom: 2,
+  },
+  footerIssuedFr: {
+    fontSize: 7,
+    textAlign: 'center',
+    color: '#6B6B6B',
+    fontStyle: 'italic',
   },
   footerBar: {
     position: 'absolute',
@@ -179,14 +208,13 @@ const VaccinationCertificatePDF = ({ patient, qrDataUrl, watermarkDataUrl }: Vac
       <Page size="A4" style={styles.page}>
         <Image src={watermarkDataUrl} style={styles.watermark} />
 
-        <View style={styles.headerLogos}>
+        <View style={styles.headerSection}>
           <Image src={headerLogoPdf} style={styles.headerLogo} />
+          <Text style={styles.title}>International Certificate of Vaccination (Prophylaxis)</Text>
+          <Text style={styles.subtitle}>
+            Certificat International de Vaccination ou de Prophylaxie
+          </Text>
         </View>
-
-        <Text style={styles.title}>International Certificate of Vaccination (Prophylaxis)</Text>
-        <Text style={styles.subtitle}>
-          Certificat International de Vaccination ou de Prophylaxie
-        </Text>
 
         <View style={styles.infoRow}>
           <View style={styles.patientInfo}>
@@ -204,10 +232,14 @@ const VaccinationCertificatePDF = ({ patient, qrDataUrl, watermarkDataUrl }: Vac
           </View>
         </View>
 
-        <Text style={styles.introText}>
-          In accordance with the International Health Regulations / comportement au Reglement
-          sanitaire international
-        </Text>
+        <View style={styles.introSection}>
+          <Text style={styles.introTextEn}>
+            In accordance with the International Health Regulations
+          </Text>
+          <Text style={styles.introTextFr}>
+            conformément au Règlement sanitaire international
+          </Text>
+        </View>
 
         <View style={styles.table}>
           <View style={styles.tableHeaderRow}>
@@ -276,41 +308,17 @@ const VaccinationCertificatePDF = ({ patient, qrDataUrl, watermarkDataUrl }: Vac
               </Text>
             </View>
           </View>
-
-          {(patient.disease_targeted ||
-            patient.disease_date ||
-            patient.manufacture_brand_batch ||
-            patient.next_booster_date ||
-            patient.official_stamp_signature) && (
-            <View style={styles.tableDataRow}>
-              <View style={styles.col2b}>
-                <Text style={styles.dataCell}>{patient.disease_targeted || ''}</Text>
-              </View>
-              <View style={styles.col3b}>
-                <Text style={styles.dataCell}>{formatCertDate(patient.disease_date)}</Text>
-              </View>
-              <View style={styles.col4b}>
-                <Text style={styles.dataCell}>{patient.manufacture_brand_batch || ''}</Text>
-              </View>
-              <View style={styles.col5b}>
-                <Text style={styles.dataCell}>{formatCertDate(patient.next_booster_date)}</Text>
-              </View>
-              <View style={styles.col6b}>
-                <Text style={styles.dataCell}>{patient.official_stamp_signature || ''}</Text>
-              </View>
-            </View>
-          )}
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.disclaimer}>
-            Penafisan (Disclaimer): Nomor kode ICV elektronik (eICV) berbeda dengan nomor seri ICV
-            fisik
+           <Text style={styles.disclaimerTitle}>Penafisan (Disclaimer):</Text>
+          <Text style={styles.disclaimerBody}>
+            Nomor kode ICV elektronik (eICV) berbeda dengan nomor seri ICV fisik
           </Text>
-          <Text style={styles.footerText}>
+          <Text style={styles.footerIssued}>
             This certificate was issued by Ministry of Health of Indonesia
           </Text>
-          <Text style={styles.footerText}>
+          <Text style={styles.footerIssuedFr}>
             Ce certificat a été délivré par le ministère Indonésien de la Santé
           </Text>
         </View>
