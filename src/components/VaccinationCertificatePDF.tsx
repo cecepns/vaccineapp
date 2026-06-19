@@ -203,6 +203,14 @@ const VaccinationCertificatePDF = ({ patient, qrDataUrl, watermarkDataUrl }: Vac
 
   const validUntil = formatCertDate(patient.valid_until);
 
+  const hasSecondRowData = Boolean(
+    patient.disease_targeted ||
+      patient.disease_date ||
+      patient.manufacture_brand_batch ||
+      patient.next_booster_date ||
+      patient.official_stamp_signature
+  );
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -308,6 +316,26 @@ const VaccinationCertificatePDF = ({ patient, qrDataUrl, watermarkDataUrl }: Vac
               </Text>
             </View>
           </View>
+
+          {hasSecondRowData && (
+            <View style={styles.tableDataRow}>
+              <View style={styles.col2b}>
+                <Text style={styles.dataCell}>{patient.disease_targeted}</Text>
+              </View>
+              <View style={styles.col3b}>
+                <Text style={styles.dataCell}>{formatCertDate(patient.disease_date)}</Text>
+              </View>
+              <View style={styles.col4b}>
+                <Text style={styles.dataCell}>{patient.manufacture_brand_batch}</Text>
+              </View>
+              <View style={styles.col5b}>
+                <Text style={styles.dataCell}>{formatCertDate(patient.next_booster_date)}</Text>
+              </View>
+              <View style={styles.col6b}>
+                <Text style={styles.dataCell}>{patient.official_stamp_signature}</Text>
+              </View>
+            </View>
+          )}
         </View>
 
         <View style={styles.footer}>
